@@ -5,7 +5,8 @@ using System.Text;
 
 namespace LineSimplifier {
     abstract public class LineSimplifier {
-        public List<int> m_keys { get; set; }
+		private List<int> m_keys;
+		private double m_tol;
         public IList<Point> Points { get; set; }
         public bool bNormalization {get;set;}
         public int NumOfPoints {
@@ -17,7 +18,17 @@ namespace LineSimplifier {
             get {
                 return m_keys;
             }
+			
         }
+
+		public double Tol {
+			get {
+				return m_tol;
+			}
+			private set {
+				m_tol = value;
+			}
+		}
 
         public LineSimplifier(IList<Point> pts, bool bnorm) {
             Points = new List<Point>();
@@ -28,6 +39,7 @@ namespace LineSimplifier {
             if (this.bNormalization) {
                 NormalizePoints();
             }
+			m_keys = new List<int> { };
         }
 
         public void NormalizePoints() {
@@ -49,19 +61,18 @@ namespace LineSimplifier {
 
         }
 
-        public double SqrDist(Point p, Point q) {
-            double dx = p.X - q.X;
-            double dy = p.Y - q.Y;
-            return dx * dx + dy * dy;
-        }
-        
+		abstract public void ComputeKeys();
 
+		public void Simplify(double tol) {
+			Tol = tol;
 
-        public double DotProduct(Point p, Point q) {
-            return p.X * q.X + p.Y * q.Y;
-        }
+			if (NumOfPoints < 2) {
+				m_keys.Add(0);
+				return;
+			}
+			ComputeKeys();
 
-        abstract public void Simplify(double tol);
+		}
 
         
 

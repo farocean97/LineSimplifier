@@ -17,5 +17,15 @@ namespace LineSimplifier {
             this.X = p.X;
             this.Y = p.Y;
         }
+
+		public double SqrDist(Point q) {
+			double dx = X - q.X;
+			double dy = Y - q.Y;
+			return dx * dx + dy * dy;
+		}
+
+		public double DotProduct(Point q) {
+			return X * q.X + Y * q.Y;
+		}
     }
 }
