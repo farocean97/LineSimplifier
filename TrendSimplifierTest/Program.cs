@@ -11,11 +11,13 @@ namespace TrendSimplifierTest {
             string filename = @"D:\test.csv";
             var lstPts = ReadCSVLines(filename).ToList();
             DPHull dphull = new DPHull(lstPts, false);
-            double tol = 1;
+            double tol = 3;
             dphull.Simplify(tol);
             foreach (int i in dphull.GetKeys) {
                 Console.WriteLine("x = {0}", lstPts[i].X);
             }
+
+            Console.ReadKey();
 
         }
 

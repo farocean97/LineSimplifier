@@ -12,7 +12,7 @@ namespace LineSimplifier {
         public SHomog(Point p, Point q) {
             U = -q.Y + p.Y;
             V = q.X - p.X;
-            W = p.X * q.Y + p.Y * q.X;
+            W = p.X * q.Y - p.Y * q.X;
         }
 
 

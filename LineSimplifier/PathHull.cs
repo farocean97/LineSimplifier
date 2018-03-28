@@ -55,14 +55,14 @@ namespace LineSimplifier {
        }
 
        private void HPopTop() {
-           HElt[++Hp] = HElt[Hp];
+           HElt[++Hp] = Elt[Top];
            Op[Hp] = eStackOp.Top;
            Elt[Top] = -1;
            Top--;
        }
 
        private void HPopBot() {
-           HElt[++Hp] = HElt[Hp];
+           HElt[++Hp] = Elt[Bot];
            Op[Hp] = eStackOp.Bot;
            Elt[Bot] = -1;
            Bot++;
@@ -80,7 +80,7 @@ namespace LineSimplifier {
        }
 
        private void HAdd(int ie) {
-           Debug.Assert(ie > i_Begin && ie < i_End);
+           Debug.Assert(ie >= i_Begin && ie <= i_End);
            bool topflag, botflag;
            topflag = LeftOf(Elt[Top], Elt[Top - 1], ie);
            botflag = LeftOf(Elt[Bot + 1], Elt[Bot], ie);
