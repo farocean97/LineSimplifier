@@ -8,10 +8,10 @@ using Microsoft.VisualBasic.FileIO;
 namespace TrendSimplifierTest {
     class Program {
         static void Main(string[] args) {
-            string filename = @"D:\test.csv";
+            string filename = @"D:\testa.csv";
             var lstPts = ReadCSVLines(filename).ToList();
             DPHull dphull = new DPHull(lstPts, false);
-            double tol = 3;
+            double tol = 1;
             dphull.Simplify(tol);
             foreach (int i in dphull.GetKeys) {
                 Console.WriteLine("x = {0}", lstPts[i].X);

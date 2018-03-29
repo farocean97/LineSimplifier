@@ -52,7 +52,7 @@ namespace LineSimplifier {
 			Debug.Assert(m_stack.Count > 0);
 			Debug.Assert(m_stack.First().eBuild == eBuildStep.OutputVertex);
             Debug.Assert(m_keys.Count > 0);
-            GetKeys.Add(m_keys.First());
+            GetKeys.Add(m_keys.Pop());
 			m_stack.Pop();
 		}
 
@@ -170,6 +170,7 @@ namespace LineSimplifier {
             ReturnKey();
             AddBuildStep(0, 0, eBuildStep.OutputVertex);
 			OutputVertex();
+            AddBuildStep(0, 0, eBuildStep.OutputVertex);
 			//AddBuildStep(ib, ib, eBuildStep.OutputVertex);
 			AddBuildStep(ib, ie, eBuildStep.DP);
 

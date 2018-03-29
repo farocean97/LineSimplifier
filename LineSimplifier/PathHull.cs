@@ -27,12 +27,12 @@ namespace LineSimplifier {
 
        public PathHull(IList<Point> pts, int i_b, int i_e, bool isleft) {
            Pts = pts;
-           Debug.Assert(i_e > i_b);
+           Debug.Assert(i_e >= i_b);
            Debug.Assert(i_b >= 0);
            Debug.Assert(i_e < pts.Count());
            i_Begin = i_b;
            i_End = i_e;
-           HMax = i_e - i_b+1;
+           HMax = Math.Max(4,i_e - i_b+1);
            Elt = new int[2 * HMax];
            HElt = new int[3 * HMax];
            Op = new eStackOp[3 * HMax];
