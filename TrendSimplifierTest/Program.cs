@@ -4,18 +4,61 @@ using System.Linq;
 using System.Text;
 using LineSimplifier;
 using Microsoft.VisualBasic.FileIO;
+using System.IO;
 
 namespace TrendSimplifierTest {
     class Program {
         static void Main(string[] args) {
             string filename = @"D:\testa.csv";
+
+            //Generate testdata
+
+            using (StreamWriter sw = new StreamWriter(filename, false)) {
+                Random rd = new Random();
+                int numofentries = 1000000;
+                double a1 = 0.5;
+                double w1 = 0.01;
+                double a2 = 0.6;
+                double w2 = 0.028;
+                double s = 1000 / (double)numofentries;
+                for (int i = 0; i <= numofentries; i++) {
+                    double x = (double)i;
+                    double y = 0;
+                    y = a1 * Math.Sin(w1 * s * x) + a2 * Math.Cos(w2 * s * x)
+                        + a1 * Math.Sin(2 * w1 * s * x) + a2 * Math.Cos(2 * w2 * s * x);
+                    //y += +rd.NextDouble();
+                    sw.WriteLine("{0},{1}", x, y);
+                }
+            }
+
+            //var lstPts = ReadCSVLines(filename).Where(x=>x.X<97).ToList();
             var lstPts = ReadCSVLines(filename).ToList();
             DPHull dphull = new DPHull(lstPts, false);
-            double tol = 1;
+            Console.WriteLine("Reduced key number = {0}", dphull.GetKeys.Count);
+            double tol = 0.05;
             dphull.Simplify(tol);
-            foreach (int i in dphull.GetKeys) {
-                Console.WriteLine("x = {0}", lstPts[i].X);
+            int k1 = dphull.GetKeys[0];
+            //for (int i = 1; i < dphull.GetKeys.Count; i++) {
+            //    Point p1 = lstPts[dphull.GetKeys[k1]];
+            //    Point p2 = lstPts[dphull.GetKeys[i]];
+            //    SHomog line = new SHomog(p1,p2 );
+            //    double lensq = p1.SqrDist(p2);
+            //    for (int j = k1 + 1; j < i; j++) {
+            //        Point p = lstPts[dphull.GetKeys[j]];
+            //        if (line.DotProduct_2CH(p) > tol * lensq) {
+            //            Console.WriteLine("Failed point x = {0}", lstPts[dphull.GetKeys[j]].X);
+            //        }
+
+            //    }
+            //}
+            Console.WriteLine("Reduced key number = {0}", dphull.GetKeys.Count);
+            using(StreamWriter sw = new StreamWriter("D:\\simplified_test.csv",false)) {
+                  foreach (int i in dphull.GetKeys) {
+                      sw.WriteLine("{0},{1}",lstPts[i].X,lstPts[i].Y);
+                  }
             }
+
+            Console.WriteLine("Reduced key number = {0}", dphull.GetKeys.Count);
 
             Console.ReadKey();
 

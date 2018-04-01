@@ -10,14 +10,20 @@ namespace LineSimplifier {
 			OutputVertex = 0,
 			DP,
 			Build,
-			ReturnKey
+			ReturnKey,
+            UpdateHull
+            
 		}
 
 		private class SBuildStep {
+            public PathHull LH { get; set; }
+            public PathHull RH { get; set; }
 			public int iB { get; set; }
 			public int iE { get; set; }
 			public eBuildStep eBuild { get; set; }
-			public SBuildStep(int i_b, int i_e, eBuildStep sb) {
+			public SBuildStep(PathHull lh, PathHull rh, int i_b, int i_e, eBuildStep sb) {
+                this.LH = lh;
+                this.RH = rh;
 				this.iB = i_b;
 				this.iE = i_e;
 				this.eBuild = sb;
@@ -40,8 +46,8 @@ namespace LineSimplifier {
             m_keys = new Stack<int> { };
 		}
 
-		private void AddBuildStep(int ib, int ie, eBuildStep eb) {
-			m_stack.Push(new SBuildStep(ib, ie, eb));
+		private void AddBuildStep(PathHull lh, PathHull rh, int ib, int ie, eBuildStep eb) {
+			m_stack.Push(new SBuildStep(lh,rh,ib, ie, eb));
 		}
 
 		private void OutputVertex() {
@@ -59,7 +65,18 @@ namespace LineSimplifier {
         private void ReturnKey() {
             Debug.Assert(m_stack.Count > 0);
             Debug.Assert(m_stack.First().eBuild == eBuildStep.ReturnKey);
-            m_keys.Push(m_stack.First().iB);
+            //m_keys.Push(m_stack.First().iB);
+            GetKeys.Add(m_stack.First().iB);
+            m_stack.Pop();
+        }
+
+        private void UpdateHull() {
+            Debug.Assert(m_stack.Count > 0);
+            Debug.Assert(m_stack.First().eBuild == eBuildStep.UpdateHull);
+            //m_keys.Push(m_stack.First().iB);
+            m_LHull = m_stack.First().LH;
+            m_RHull = m_stack.First().RH;
+            m_PHTag = m_stack.First().iB;
             m_stack.Pop();
         }
 
@@ -86,21 +103,25 @@ namespace LineSimplifier {
 			lensq = Points[ib].SqrDist(Points[ie]);
 
             if ((ie - ib) < 2) {
-                AddBuildStep(ie, ie, eBuildStep.ReturnKey);
+                AddBuildStep(null, null, ie, ie, eBuildStep.ReturnKey);
                 return;
             }
 			this.m_LHull.Find_Extreme(line, ref le, ref ld);
 			this.m_RHull.Find_Extreme(line, ref re, ref rd);
  			if (ld > rd) {
 				if (ld * ld > Tol * lensq) {
-					m_LHull.Split(le);
-                    AddBuildStep(0, 0, eBuildStep.OutputVertex);
-					AddBuildStep(ib, le, eBuildStep.DP);
-					AddBuildStep(ib, le, eBuildStep.Build);
-                    AddBuildStep(le, ie, eBuildStep.DP);
+                    PathHull lh = m_LHull.Copy();
+                    PathHull rh = m_RHull.Copy();
+					lh.Split(le);
+                    //AddBuildStep(null, null, 0, 0, eBuildStep.OutputVertex);
+                    AddBuildStep(null, null, le, ie, eBuildStep.DP);
+                    AddBuildStep(lh, rh, m_PHTag, 0, eBuildStep.UpdateHull);
+					AddBuildStep(null, null, ib, le, eBuildStep.DP);
+					AddBuildStep(null, null, ib, le, eBuildStep.Build);
+                    //AddBuildStep(null, null, le, ie, eBuildStep.DP);
 					return;
 				} else {
-					AddBuildStep(ie, ie, eBuildStep.ReturnKey);
+					AddBuildStep(null, null, ie, ie, eBuildStep.ReturnKey);
 					return;
 				}
 			} else {
@@ -108,16 +129,16 @@ namespace LineSimplifier {
 					if (m_PHTag != re) {
 						m_RHull.Split(re);
 					}
-                    AddBuildStep(re, ie, eBuildStep.DP);
-                    AddBuildStep(re, ie, eBuildStep.Build);
-                    AddBuildStep(0, 0, eBuildStep.OutputVertex);
-                    AddBuildStep(ib, re, eBuildStep.DP);
+                    AddBuildStep(null, null, re, ie, eBuildStep.DP);
+                    AddBuildStep(null, null,re, ie, eBuildStep.Build);
+                   // AddBuildStep(null, null,0, 0, eBuildStep.OutputVertex);
+                    AddBuildStep(null, null,ib, re, eBuildStep.DP);
 					if (m_PHTag == re) {
-						AddBuildStep(ib, re, eBuildStep.Build);
+						AddBuildStep(null, null,ib, re, eBuildStep.Build);
 					}
 					return;
 				} else {
-					AddBuildStep(ie, ie, eBuildStep.ReturnKey);
+					AddBuildStep(null, null,ie, ie, eBuildStep.ReturnKey);
 				} 
 			}
 
@@ -163,16 +184,17 @@ namespace LineSimplifier {
 
 			//ie--;
 
-			AddBuildStep(ib, ie, eBuildStep.Build);
+			AddBuildStep(null, null,ib, ie, eBuildStep.Build);
 			Build();
 			//AddBuildStep(ib, ib, eBuildStep.OutputVertex);
-            AddBuildStep(ib, ib, eBuildStep.ReturnKey);
+            AddBuildStep(null, null, ib, ib, eBuildStep.ReturnKey);
             ReturnKey();
-            AddBuildStep(0, 0, eBuildStep.OutputVertex);
-			OutputVertex();
-            AddBuildStep(0, 0, eBuildStep.OutputVertex);
+            //AddBuildStep(null, null, 0, 0, eBuildStep.OutputVertex);
+			//OutputVertex();
+            //AddBuildStep(null, null, 0, 0, eBuildStep.OutputVertex);
+
 			//AddBuildStep(ib, ib, eBuildStep.OutputVertex);
-			AddBuildStep(ib, ie, eBuildStep.DP);
+            AddBuildStep(null, null, ib, ie, eBuildStep.DP);
 
 			while (m_stack.Count() > 0) {
 				switch (m_stack.First().eBuild) {
@@ -186,8 +208,12 @@ namespace LineSimplifier {
 						ReturnKey();
 						break;
 					case eBuildStep.OutputVertex:
-                        OutputVertex();
+                        //OutputVertex();
+                        Debug.Assert(false);
 						break;
+                    case eBuildStep.UpdateHull:
+                        UpdateHull();
+                        break;
 					default:
 						Debug.Assert(false);
 						break;

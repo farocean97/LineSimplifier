@@ -25,6 +25,8 @@ namespace LineSimplifier {
        public int Hp { get; set; }
        public bool isLeft { get; set; }
 
+       public PathHull() { }
+
        public PathHull(IList<Point> pts, int i_b, int i_e, bool isleft) {
            Pts = pts;
            Debug.Assert(i_e >= i_b);
@@ -113,7 +115,10 @@ namespace LineSimplifier {
        }
 
        public void Split(int ie) {
-           Debug.Assert(ie > i_Begin && ie < i_End);
+           if (!(ie > i_Begin && ie < i_End)) {
+               throw new Exception(string.Format("In split ie= {0}, i_Begin = {1}, i_End = {2}", ie, i_Begin, i_End));
+           }
+           //Debug.Assert(ie > i_Begin && ie < i_End);
            int tmpe;
            eStackOp tmpo;
            tmpo = Op[Hp];
@@ -200,6 +205,25 @@ namespace LineSimplifier {
 
            }
      
+       }
+
+       public PathHull Copy() {
+           PathHull ph = new PathHull(){};
+           ph.Pts = this.Pts;
+           ph.i_Begin = this.i_Begin;
+           ph.i_End = this.i_End;
+           ph.HMax = this.HMax;
+           ph.Elt = new int[2 * HMax];
+           ph.HElt = new int[3 * HMax];
+           ph.Op = new eStackOp[3 * HMax];
+           this.Elt.CopyTo(ph.Elt,0);
+           this.HElt.CopyTo(ph.HElt, 0);
+           this.Op.CopyTo(ph.Op, 0);
+           ph.Top = this.Top;
+           ph.Bot = this.Bot;
+           ph.Hp = this.Hp;
+           ph.isLeft = this.isLeft;
+           return ph;
        }
 
             
