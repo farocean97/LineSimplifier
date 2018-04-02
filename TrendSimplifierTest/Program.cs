@@ -5,6 +5,7 @@ using System.Text;
 using LineSimplifier;
 using Microsoft.VisualBasic.FileIO;
 using System.IO;
+using System.Diagnostics;
 
 namespace TrendSimplifierTest {
     class Program {
@@ -26,17 +27,32 @@ namespace TrendSimplifierTest {
                     double y = 0;
                     y = a1 * Math.Sin(w1 * s * x) + a2 * Math.Cos(w2 * s * x)
                         + a1 * Math.Sin(2 * w1 * s * x) + a2 * Math.Cos(2 * w2 * s * x);
-                    //y += +rd.NextDouble();
+                    y += +rd.NextDouble();
                     sw.WriteLine("{0},{1}", x, y);
                 }
             }
 
             //var lstPts = ReadCSVLines(filename).Where(x=>x.X<97).ToList();
-            var lstPts = ReadCSVLines(filename).ToList();
+            Console.WriteLine("Hello");
+            var varlstPts = ReadCSVLines(filename);
+            //Console.WriteLine("HelloLast");
+            //var a = varlstPts.Last();
+            //Console.WriteLine("HelloArray");
+            //var arrlstpts = varlstPts.ToArray();
+
+            Console.WriteLine("Hello2");
+            var lstPts = varlstPts.ToList();
+
+            Stopwatch watch = new Stopwatch();
+            watch.Start();
+            
             DPHull dphull = new DPHull(lstPts, false);
             Console.WriteLine("Reduced key number = {0}", dphull.GetKeys.Count);
-            double tol = 0.05;
+            double tol = 0.85; //0.05
             dphull.Simplify(tol);
+            watch.Stop();
+            Console.WriteLine("Time elapsed : {0}", watch.Elapsed);
+
             int k1 = dphull.GetKeys[0];
             //for (int i = 1; i < dphull.GetKeys.Count; i++) {
             //    Point p1 = lstPts[dphull.GetKeys[k1]];
