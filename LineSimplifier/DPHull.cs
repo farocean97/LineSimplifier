@@ -16,12 +16,12 @@ namespace LineSimplifier {
 		}
 
 		private class SBuildStep {
-            public PathHull LH { get; set; }
-            public PathHull RH { get; set; }
+            public PathHullStack LH { get; set; }
+            public PathHullStack RH { get; set; }
 			public int iB { get; set; }
 			public int iE { get; set; }
 			public eBuildStep eBuild { get; set; }
-			public SBuildStep(PathHull lh, PathHull rh, int i_b, int i_e, eBuildStep sb) {
+			public SBuildStep(PathHullStack lh, PathHullStack rh, int i_b, int i_e, eBuildStep sb) {
                 this.LH = lh;
                 this.RH = rh;
 				this.iB = i_b;
@@ -32,9 +32,9 @@ namespace LineSimplifier {
 
 		private Stack<SBuildStep> m_stack;
 
-		private PathHull m_RHull;
+		private PathHullStack m_RHull;
 
-		private PathHull m_LHull;
+		private PathHullStack m_LHull;
 
 		private int m_PHTag;
 
@@ -46,7 +46,7 @@ namespace LineSimplifier {
             m_keys = new Stack<int> { };
 		}
 
-		private void AddBuildStep(PathHull lh, PathHull rh, int ib, int ie, eBuildStep eb) {
+		private void AddBuildStep(PathHullStack lh, PathHullStack rh, int ib, int ie, eBuildStep eb) {
 			m_stack.Push(new SBuildStep(lh,rh,ib, ie, eb));
 		}
 
@@ -87,8 +87,8 @@ namespace LineSimplifier {
 			int ie = m_stack.First().iE;
 			m_stack.Pop();
 			m_PHTag =  (ib + ie) / 2;
-			m_LHull = new PathHull(Points,ib, m_PHTag, true);
-			m_RHull = new PathHull(Points, m_PHTag, ie, false);
+			m_LHull = new PathHullStack(Points,ib, m_PHTag, true);
+			m_RHull = new PathHullStack(Points, m_PHTag, ie, false);
 		}
 
 		private void DP() {
@@ -110,8 +110,8 @@ namespace LineSimplifier {
 			this.m_RHull.Find_Extreme(line, ref re, ref rd);
  			if (ld > rd) {
 				if (ld * ld > Tol * lensq) {
-                    PathHull lh = m_LHull.Copy();
-                    PathHull rh = m_RHull.Copy();
+                    PathHullStack lh = m_LHull.Copy();
+                    PathHullStack rh = m_RHull.Copy();
 					lh.Split(le);
                     //AddBuildStep(null, null, 0, 0, eBuildStep.OutputVertex);
                     AddBuildStep(null, null, le, ie, eBuildStep.DP);

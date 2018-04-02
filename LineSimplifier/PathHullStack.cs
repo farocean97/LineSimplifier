@@ -4,30 +4,41 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 
-
 namespace LineSimplifier {
-   public  class PathHull {
-       public enum eStackOp {
+	public class PathHullStack {
+	   public enum eOp {
            Push = 0,
            Top,
            Bot
        }
 
+	   private class PHullOp {
+		   public eOp Op { get; set;}
+		   public int Pt_i { get; set; }
+
+		   public PHullOp(eOp op, int pti) {
+			   this.Op = op;
+			   this.Pt_i = pti;
+		   }
+	   }
+
+	   private Stack<PHullOp> StackOp { get; set; }
+
        public IList<Point> Pts {get;set;}
        public int[] Elt { get; set; }
-       public int[] HElt { get; set; }
-       public eStackOp[] Op { get; set; }
+       //public int[] HElt { get; set; }
+       //public eStackOp[] Op { get; set; }
        public int HMax { get; set; }
        public int i_Begin { get; set; }
        public int i_End { get; set; }
        public int Top { get; set; }
        public int Bot { get; set; }
-       public int Hp { get; set; }
+       //public int Hp { get; set; }
        public bool isLeft { get; set; }
 
-       public PathHull() { }
+       public PathHullStack() { }
 
-       public PathHull(IList<Point> pts, int i_b, int i_e, bool isleft) {
+       public PathHullStack(IList<Point> pts, int i_b, int i_e, bool isleft) {
            Pts = pts;
            Debug.Assert(i_e >= i_b);
            Debug.Assert(i_b >= 0);
@@ -36,8 +47,8 @@ namespace LineSimplifier {
            i_End = i_e;
            HMax = Math.Max(4,i_e - i_b+1);
            Elt = new int[2 * HMax];
-           HElt = new int[3 * HMax];
-           Op = new eStackOp[3 * HMax];
+           //HElt = new int[3 * HMax];
+		   this.StackOp = new Stack<PHullOp> { };
            isLeft = isleft;
            HBuild(isLeft);
        }
@@ -52,20 +63,23 @@ namespace LineSimplifier {
        private void HPush(int ie) {
            Elt[++Top] = ie;
            Elt[--Bot] = ie;
-           HElt[++Hp] = ie;
-           Op[Hp] = eStackOp.Push;
+		   StackOp.Push(new PHullOp(eOp.Push, ie));
+           //HElt[++Hp] = ie;
+           //Op[Hp] = eStackOp.Push;
        }
 
        private void HPopTop() {
-           HElt[++Hp] = Elt[Top];
-           Op[Hp] = eStackOp.Top;
+		   StackOp.Push(new PHullOp(eOp.Top, Elt[this.Top]));
+		   //HElt[++Hp] = Elt[Top];
+		   //Op[Hp] = eStackOp.Top;
            Elt[Top] = -1;
            Top--;
        }
 
        private void HPopBot() {
-           HElt[++Hp] = Elt[Bot];
-           Op[Hp] = eStackOp.Bot;
+		   StackOp.Push(new PHullOp(eOp.Bot, Elt[this.Bot]));
+           //HElt[++Hp] = Elt[Bot];
+           //Op[Hp] = eStackOp.Bot;
            Elt[Bot] = -1;
            Bot++;
        }
@@ -76,9 +90,10 @@ namespace LineSimplifier {
            Elt[Top] = ie;
            Bot = HMax - 1;
            Elt[Bot] = ie;
-           Hp = 0;
-           HElt[Hp] = ie;
-           Op[Hp] = eStackOp.Push;
+		   //Hp = 0;
+		   //HElt[Hp] = ie;
+		   //Op[Hp] = eStackOp.Push;
+		   StackOp.Push(new PHullOp(eOp.Push, ie));
        }
 
        private void HAdd(int ie) {
@@ -119,28 +134,24 @@ namespace LineSimplifier {
                throw new Exception(string.Format("In split ie= {0}, i_Begin = {1}, i_End = {2}", ie, i_Begin, i_End));
            }
            //Debug.Assert(ie > i_Begin && ie < i_End);
-           int tmpe;
-           eStackOp tmpo;
-           tmpo = Op[Hp];
-           tmpe = HElt[Hp];
-           while (Hp > 0 && (tmpe != ie || tmpo != eStackOp.Push)) {
-               Hp--;
-               switch (tmpo) {
-                   case eStackOp.Push:
+		   PHullOp PHOp = this.StackOp.First();
+		   while (this.StackOp.Count > 0 && (PHOp.Pt_i != ie || PHOp.Op != eOp.Push)) {
+			   this.StackOp.Pop();
+			   switch (PHOp.Op) {
+                   case eOp.Push:
                        Top--;
                        Bot++;
                        break;
-                   case eStackOp.Top:
-                       Elt[++Top] = tmpe;
+                   case eOp.Top:
+					   Elt[++Top] = PHOp.Pt_i;
                        break;
-                   case eStackOp.Bot:
-                       Elt[--Bot] = tmpe;
+                   case eOp.Bot:
+					   Elt[--Bot] = PHOp.Pt_i;
                        break;
                    default:
                        break;
                }
-               tmpo = Op[Hp];
-               tmpe = HElt[Hp];
+			   PHOp = this.StackOp.First();
            }
        }
 
@@ -207,22 +218,29 @@ namespace LineSimplifier {
      
        }
 
-       public PathHull Copy() {
-           PathHull ph = new PathHull(){};
+       public PathHullStack Copy() {
+           PathHullStack ph = new PathHullStack(){};
            ph.Pts = this.Pts;
            ph.i_Begin = this.i_Begin;
            ph.i_End = this.i_End;
            ph.HMax = this.HMax;
 		   ph.Top = this.Top;
 		   ph.Bot = this.Bot;
-		   ph.Hp = this.Hp;
+		   //ph.Hp = this.Hp;
            ph.Elt = new int[2 * HMax];
-           ph.HElt = new int[3 * HMax];
-           ph.Op = new eStackOp[3 * HMax];
-		   for (int i = 0; i <= this.Hp; i++) {
-			   ph.Op[i] = this.Op[i];
-			   ph.HElt[i] = this.HElt[i];
-		   }
+		   //ph.HElt = new int[3 * HMax];
+		   //ph.Op = new eStackOp[3 * HMax];
+		   //for (int i = 0; i <= this.Hp; i++) {
+		   //    ph.Op[i] = this.Op[i];
+		   //    ph.HElt[i] = this.HElt[i];
+		   //}
+		   // Clone stackb
+		   var arr = new PHullOp[this.StackOp.Count];
+		   this.StackOp.CopyTo(arr, 0);
+		   Array.Reverse(arr);
+		   ph.StackOp = new Stack<PHullOp>(arr);
+		   // Clone stacke
+
 		   for (int i = this.Bot; i <= this.Top; i++) {
 			   ph.Elt[i] = this.Elt[i];
 		   }
@@ -233,7 +251,5 @@ namespace LineSimplifier {
            return ph;
        }
 
-            
-
-    }
+	}
 }

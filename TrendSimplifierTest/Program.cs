@@ -10,27 +10,27 @@ using System.Diagnostics;
 namespace TrendSimplifierTest {
     class Program {
         static void Main(string[] args) {
-            string filename = @"D:\testa.csv";
+            string filename = @"C:\testa.csv";
 
             //Generate testdata
 
-            using (StreamWriter sw = new StreamWriter(filename, false)) {
-                Random rd = new Random();
-                int numofentries = 1000000;
-                double a1 = 0.5;
-                double w1 = 0.01;
-                double a2 = 0.6;
-                double w2 = 0.028;
-                double s = 1000 / (double)numofentries;
-                for (int i = 0; i <= numofentries; i++) {
-                    double x = (double)i;
-                    double y = 0;
-                    y = a1 * Math.Sin(w1 * s * x) + a2 * Math.Cos(w2 * s * x)
-                        + a1 * Math.Sin(2 * w1 * s * x) + a2 * Math.Cos(2 * w2 * s * x);
-                    y += +rd.NextDouble();
-                    sw.WriteLine("{0},{1}", x, y);
-                }
-            }
+			//using (StreamWriter sw = new StreamWriter(filename, false)) {
+			//    Random rd = new Random();
+			//    int numofentries = 1000000;
+			//    double a1 = 0.5;
+			//    double w1 = 0.01;
+			//    double a2 = 0.6;
+			//    double w2 = 0.028;
+			//    double s = 1000 / (double)numofentries;
+			//    for (int i = 0; i <= numofentries; i++) {
+			//        double x = (double)i;
+			//        double y = 0;
+			//        y = a1 * Math.Sin(w1 * s * x) + a2 * Math.Cos(w2 * s * x)
+			//            + a1 * Math.Sin(2 * w1 * s * x) + a2 * Math.Cos(2 * w2 * s * x);
+			//        y += +rd.NextDouble();
+			//        sw.WriteLine("{0},{1}", x, y);
+			//    }
+			//}
 
             //var lstPts = ReadCSVLines(filename).Where(x=>x.X<97).ToList();
             Console.WriteLine("Hello");
@@ -43,12 +43,15 @@ namespace TrendSimplifierTest {
             Console.WriteLine("Hello2");
             var lstPts = varlstPts.ToList();
 
+			Console.WriteLine("Please pressure Enter to continue!");
+			Console.ReadKey();
+
             Stopwatch watch = new Stopwatch();
             watch.Start();
             
             DPHull dphull = new DPHull(lstPts, false);
             Console.WriteLine("Reduced key number = {0}", dphull.GetKeys.Count);
-            double tol = 0.85; //0.05
+            double tol = 0.95; //0.05
             dphull.Simplify(tol);
             watch.Stop();
             Console.WriteLine("Time elapsed : {0}", watch.Elapsed);
@@ -67,16 +70,16 @@ namespace TrendSimplifierTest {
 
             //    }
             //}
-            Console.WriteLine("Reduced key number = {0}", dphull.GetKeys.Count);
-            using(StreamWriter sw = new StreamWriter("D:\\simplified_test.csv",false)) {
-                  foreach (int i in dphull.GetKeys) {
-                      sw.WriteLine("{0},{1}",lstPts[i].X,lstPts[i].Y);
-                  }
-            }
+			//Console.WriteLine("Reduced key number = {0}", dphull.GetKeys.Count);
+			//using (StreamWriter sw = new StreamWriter("C:\\simplified_test.csv", false)) {
+			//    foreach (int i in dphull.GetKeys) {
+			//        sw.WriteLine("{0},{1}", lstPts[i].X, lstPts[i].Y);
+			//    }
+			//}
 
-            Console.WriteLine("Reduced key number = {0}", dphull.GetKeys.Count);
+			//Console.WriteLine("Reduced key number = {0}", dphull.GetKeys.Count);
 
-            Console.ReadKey();
+            //Console.ReadKey();
 
         }
 
